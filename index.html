@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Kaplumbağa Oyunu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #d4f1f4;
+      text-align: center;
+    }
+    #gameArea {
+      width: 800px;
+      height: 200px;
+      margin: 40px auto;
+      background-color: #fff;
+      border: 2px solid #333;
+      position: relative;
+      overflow: hidden;
+    }
+    .turtle {
+      width: 50px;
+      height: 50px;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/6/6c/Turtle_cartoon.svg') no-repeat center/contain;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+    .rock {
+      width: 50px;
+      height: 50px;
+      background: gray;
+      position: absolute;
+      bottom: 0;
+    }
+    #videoContainer, #questionContainer {
+      display: none;
+      margin-top: 20px;
+    }
+    input {
+      padding: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kaplumbağa Eğitim Oyunu</h1>
+  <div id="gameArea">
+    <div class="turtle" id="turtle"></div>
+    <div class="rock" style="left: 200px" data-answer="tanışmak" data-video="https://tidsozluk.aile.gov.tr/vidz_proc/0863/degiske/863-01_cr_0.5.mp4"></div>
+    <div class="rock" style="left: 400px" data-answer="bilmek" data-video="https://tidsozluk.aile.gov.tr/vidz_proc/0006/degiske/06-01_cr_0.1.mp4"></div>
+    <div class="rock" style="left: 600px" data-answer="özür dilemek" data-video="https://tidsozluk.aile.gov.tr/vidz_proc/0859/degiske/859-01_cr_0.5.mp4"></div>
+    <div class="rock" style="left: 700px" data-answer="bakmak" data-video="https://tidsozluk.aile.gov.tr/vidz_proc/0013/degiske/13-01_cr_0.1.mp4"></div>
+  </div>
+
+  <div id="videoContainer">
+    <video id="questionVideo" controls autoplay></video>
+  </div>
+  <div id="questionContainer">
+    <p>Videoya göre doğru kelimeyi yaz:</p>
+    <input type="text" id="answerInput">
+    <button onclick="checkAnswer()">Gönder</button>
+    <p id="feedback"></p>
+  </div>
+
+  <script>
+    const turtle = document.getElementById('turtle');
+    const rocks = document.querySelectorAll('.rock');
+    const video = document.getElementById('questionVideo');
+    const videoContainer = document.getElementById('videoContainer');
+    const questionContainer = document.getElementById('questionContainer');
+    const answerInput = document.getElementById('answerInput');
+    const feedback = document.getElementById('feedback');
+
+    let turtleX = 0;
+
+    function moveTurtle() {
+      turtleX += 10;
+      turtle.style.left = turtleX + 'px';
+      checkForObstacle();
+    }
+
+    function checkForObstacle() {
+      for (let rock of rocks) {
+        const rockX = parseInt(rock.style.left);
+        if (Math.abs(rockX - turtleX) < 10 && rock.style.display !== 'none') {
+          showQuestion(rock);
+          return;
+        }
+      }
+    }
+
+    function showQuestion(rock) {
+      video.src = rock.dataset.video;
+      videoContainer.style.display = 'block';
+      questionContainer.style.display = 'block';
+      answerInput.value = '';
+      feedback.textContent = '';
+      questionContainer.dataset.expectedAnswer = rock.dataset.answer;
+      questionContainer.dataset.currentRock = rock.style.left;
+    }
+
+    function checkAnswer() {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      const correctAnswer = questionContainer.dataset.expectedAnswer;
+      const rockPosition = questionContainer.dataset.currentRock;
+      if (userAnswer === correctAnswer) {
+        feedback.textContent = 'Doğru!';
+        document.querySelector(`.rock[style*="left: ${rockPosition}"]`).style.display = 'none';
+        videoContainer.style.display = 'none';
+        questionContainer.style.display = 'none';
+      } else {
+        feedback.textContent = 'Yanlış, tekrar dene.';
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' && questionContainer.style.display === 'none') {
+        moveTurtle();
+      }
+    });
+  </script>
+</body>
+</html>
